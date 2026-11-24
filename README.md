@@ -39,6 +39,17 @@ An agent distro is a portable directory of instructions, skills, tooling, polici
 There is no app to install: the cloned repo is the distro - `AGENTS.md`, bundled firstmate skills, and helper scripts that any terminal coding agent can follow.
 Launching a supported harness inside it for your primary session instantiates your first mate - and makes you the captain.
 
+## Architecture
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/firstmate-architecture-dark.svg">
+    <img alt="Firstmate Architecture Diagram" src="docs/architecture/firstmate-architecture-light.svg" width="100%">
+  </picture>
+</p>
+
+An interactive, searchable version of this architecture is available at [`docs/architecture/firstmate-architecture.html`](docs/architecture/firstmate-architecture.html) (generated via [Archify](docs/architecture/firstmate-archify.json)). Full architectural detail lives in [docs/architecture.md](docs/architecture.md).
+
 ## Features
 
 - **One liaison** - you talk only to the first mate; it dispatches, supervises, escalates only real decisions, and reports plain outcomes.
