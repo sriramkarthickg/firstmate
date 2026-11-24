@@ -1,0 +1,218 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Firstmate Fleet Architecture",
+    "subtitle": "Multi-agent autonomous fleet distribution and supervision topology",
+    "output": "docs/architecture/firstmate-architecture.html",
+    "visual_preset": "blueprint",
+    "animation": "trace",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "captain",
+      "type": "external",
+      "label": "Captain (User)",
+      "sublabel": "Interactive Chat / CLI",
+      "pos": [40, 260],
+      "size": [150, 64],
+      "tag": "Sole Authority"
+    },
+    {
+      "id": "primary_harness",
+      "type": "frontend",
+      "label": "First Mate",
+      "sublabel": "Primary Supervisor (AGENTS.md)",
+      "pos": [260, 260],
+      "size": [180, 64],
+      "tag": "Liaison"
+    },
+    {
+      "id": "watcher",
+      "type": "backend",
+      "label": "Event Watcher",
+      "sublabel": "bin/fm-watch.sh",
+      "pos": [260, 440],
+      "size": [180, 64],
+      "tag": "Zero-Token"
+    },
+    {
+      "id": "durable_state",
+      "type": "database",
+      "label": "Durable State",
+      "sublabel": "state/ & data/ & config/",
+      "pos": [510, 440],
+      "size": [180, 64],
+      "tag": "Disk Storage"
+    },
+    {
+      "id": "spawn_engine",
+      "type": "backend",
+      "label": "Dispatch & Spawn",
+      "sublabel": "fm-spawn.sh & quota-axi",
+      "pos": [510, 260],
+      "size": [180, 64],
+      "tag": "Router"
+    },
+    {
+      "id": "secondmates",
+      "type": "cloud",
+      "label": "Secondmates",
+      "sublabel": "Isolated FM_HOME Instances",
+      "pos": [510, 80],
+      "size": [180, 64],
+      "tag": "Sub-Distros"
+    },
+    {
+      "id": "session_backend",
+      "type": "cloud",
+      "label": "Session Backend",
+      "sublabel": "tmux / herdr / zellij / orca",
+      "pos": [760, 260],
+      "size": [180, 64],
+      "tag": "Panes & Windows"
+    },
+    {
+      "id": "crew_workers",
+      "type": "backend",
+      "label": "Crewmates & Scouts",
+      "sublabel": "Ship & Scout Workers",
+      "pos": [1010, 260],
+      "size": [180, 64],
+      "tag": "Workers"
+    },
+    {
+      "id": "worktrees",
+      "type": "database",
+      "label": "Git Worktrees",
+      "sublabel": "Treehouse Worktrees",
+      "pos": [1010, 440],
+      "size": [180, 64],
+      "tag": "Disposable"
+    },
+    {
+      "id": "remote_forge",
+      "type": "external",
+      "label": "Remote Forge",
+      "sublabel": "GitHub PRs / Gerrit Changes",
+      "pos": [1010, 80],
+      "size": [180, 64],
+      "tag": "Delivery"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Firstmate Operational Home (FM_HOME)",
+      "wraps": [
+        "primary_harness",
+        "watcher",
+        "durable_state",
+        "spawn_engine"
+      ],
+      "pad": 18
+    },
+    {
+      "kind": "security-group",
+      "label": "Fleet Execution Plane",
+      "wraps": [
+        "session_backend",
+        "crew_workers",
+        "worktrees"
+      ],
+      "pad": 18
+    }
+  ],
+  "connections": [
+    {
+      "from": "captain",
+      "to": "primary_harness",
+      "label": "Orders & Decides",
+      "variant": "emphasis"
+    },
+    {
+      "from": "primary_harness",
+      "to": "spawn_engine",
+      "label": "Launch Brief & Mode",
+      "variant": "default"
+    },
+    {
+      "from": "spawn_engine",
+      "to": "session_backend",
+      "label": "Allocate Pane/Window",
+      "variant": "default"
+    },
+    {
+      "from": "session_backend",
+      "to": "crew_workers",
+      "label": "Hosts Worker Process",
+      "variant": "default"
+    },
+    {
+      "from": "crew_workers",
+      "to": "worktrees",
+      "label": "Build / Test / Commit",
+      "variant": "default"
+    },
+    {
+      "from": "crew_workers",
+      "to": "remote_forge",
+      "label": "Push Branch / Open PR",
+      "variant": "emphasis"
+    },
+    {
+      "from": "watcher",
+      "to": "session_backend",
+      "label": "Inspects Pane Hashes",
+      "variant": "dashed"
+    },
+    {
+      "from": "watcher",
+      "to": "durable_state",
+      "label": "Reads state/*.status",
+      "variant": "dashed"
+    },
+    {
+      "from": "watcher",
+      "to": "primary_harness",
+      "label": "Wake Signal on Event",
+      "variant": "security"
+    },
+    {
+      "from": "primary_harness",
+      "to": "secondmates",
+      "label": "Delegates Scoped Work",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Zero-Token Supervision",
+      "items": [
+        "Bash watcher (bin/fm-watch.sh) monitors fleet panes without LLM polling",
+        "Wakes First Mate only on status changes, prompt blocks, or wedge events",
+        "Idle and running states are completely tokenless"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Strict Isolation & Safety",
+      "items": [
+        "First Mate is strictly read-only over target project code (Hard Rule #1)",
+        "Crewmates make changes inside clean, disposable Git worktrees",
+        "PR merges require explicit Captain word unless in +yolo mode"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Fleet Orchestration",
+      "items": [
+        "Ship tasks deliver verified code via no-mistakes or direct-PR",
+        "Scout tasks produce standalone reports in data/<id>/report.md",
+        "Persistent Secondmates scale autonomous operations locally or over SSH"
+      ]
+    }
+  ]
+}
